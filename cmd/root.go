@@ -8,30 +8,49 @@ import (
 	"os"
 
 	gitclient "github.com/makotot/sentei/internal/git"
+	"github.com/makotot/sentei/internal/tui"
 	"github.com/spf13/cobra"
 )
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
-	Use:   "sentei",
-	Short: "A brief description of your application",
-	Long: `A longer description that spans multiple lines and likely contains
-examples and usage of using your application. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+	Use:     "sentei",
+	Short:   "A tool to interactively select branches to be deleted.",
+	Version: "0.0.1",
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
 	Run: func(cmd *cobra.Command, args []string) {
 		wd, _ := os.Getwd()
-		fmt.Println("Current working directory: ", wd)
 		repo := gitclient.GitClient{Path: wd}
 		isrepo := repo.CheckIsGitRepo()
-		fmt.Println("Is git repo: ", isrepo)
 
-		branches := repo.GetBranches()
-		fmt.Println(branches)
+		if !isrepo {
+			fmt.Println("Not a git repository.")
+			return
+		}
+
+		branches, err := repo.GetBranches()
+
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+
+		selected, err := tui.Form(branches)
+
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+
+		result, err := repo.DeleteBranches(selected)
+
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+
+		fmt.Println(result)
 	},
 }
 
@@ -39,6 +58,7 @@ to quickly create a Cobra application.`,
 // This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
 	err := rootCmd.Execute()
+
 	if err != nil {
 		os.Exit(1)
 	}
