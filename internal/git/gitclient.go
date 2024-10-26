@@ -2,6 +2,7 @@ package gitclient
 
 import (
 	"errors"
+	"fmt"
 	"os/exec"
 	"strings"
 )
@@ -52,13 +53,17 @@ func (client *GitClient) DeleteBranches(branches []string) (string, error) {
 	}
 
 	branchesStr := strings.Join(branches, " ")
-	cmd := exec.Command("git", "branch", "-D", branchesStr)
-	err := cmd.Run()
+	fmt.Println("Deleting branches: ", branchesStr)
+	cmd := exec.Command("git", append([]string{"branch", "-D"}, branches...)...)
+	output, err := cmd.CombinedOutput()
 
 	if err != nil {
+		fmt.Printf("Error: %s\n", err)
+		fmt.Printf("Output: %s\n", string(output))
 		return "", err
 	}
-	return branchesStr, nil
+
+	return strings.Join(branches, ", "), nil
 }
 
 func getDefaultBranch() string {

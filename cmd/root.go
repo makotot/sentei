@@ -16,7 +16,7 @@ import (
 var rootCmd = &cobra.Command{
 	Use:     "sentei",
 	Short:   "A tool to interactively select branches to be deleted.",
-	Version: "0.0.1",
+	Version: "0.0.2",
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
 	Run: func(cmd *cobra.Command, args []string) {
@@ -50,7 +50,7 @@ var rootCmd = &cobra.Command{
 			return
 		}
 
-		fmt.Println(result)
+		fmt.Println("Successfully delete these branches: ", result)
 	},
 }
 
@@ -60,6 +60,7 @@ func Execute() {
 	err := rootCmd.Execute()
 
 	if err != nil {
+		fmt.Println("Error:", err)
 		os.Exit(1)
 	}
 }
